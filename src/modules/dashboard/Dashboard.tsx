@@ -1,5 +1,6 @@
 "use client";
-import { ArrowLeft, Clock } from "lucide-react";
+
+import { ArrowLeft } from "lucide-react";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
@@ -57,21 +58,24 @@ const Dashboard = () => {
         <DashboardBreadcrumb folderPath={folderPath} onNavigate={onNavigate} />
         <div className="flex flex-col pt-4">
           <h1 className="flex flex-row items-center gap-x-2 text-2xl">
+            {/* To render the back button and correct icon */}
             {activeFolder.id !== "0" && (
-              <div
-                className="mr-2 rounded-[12px] hover:bg-gray-100"
-                onClick={() => {
-                  if (folderPath.length > 1) {
-                    onNavigate(folderPath[folderPath.length - 2]!.id);
-                  } else {
-                    onNavigate(null);
-                  }
-                }}
-              >
-                <ArrowLeft className="p-1" size={40} />
-              </div>
+              <>
+                <div
+                  className="mr-2 rounded-[12px] hover:bg-gray-100"
+                  onClick={() => {
+                    if (folderPath.length > 1) {
+                      onNavigate(folderPath[folderPath.length - 2]!.id);
+                    } else {
+                      onNavigate(null);
+                    }
+                  }}
+                >
+                  <ArrowLeft className="p-1" size={25} />
+                </div>
+                <MIcon type={activeFolder.type} />
+              </>
             )}
-            <MIcon type={activeFolder.type} />
             {activeFolder.name}
           </h1>
           <span className="text-[13px] text-neutral-600">
