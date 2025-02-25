@@ -13,7 +13,7 @@ A better self-hosted cloud storage solution.
 
 - Finally understood how webdav works.
 - now have to work on actually making a system with uploads, downloads, deletes, retrieve
-- implement user sytem
+- implement user system
 - implement quota
 
 ## note 18/02
