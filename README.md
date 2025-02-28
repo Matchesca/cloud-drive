@@ -5,16 +5,13 @@ A better self-hosted cloud storage solution.
 # TO-DO
 
 - [ ] Add Actual file uploading and storing (WIP)
-- [ ] write the db schema
-- [ ] Build ui scaffolding
-- [ ] Add auth
+- [x] write the db schema
+- [ ] Build ui scaffolding (WIP)
+- [x] Add auth
 
 ## Tuesday Feb 25
 
-- Finally understood how webdav works.
-- now have to work on actually making a system with uploads, downloads, deletes, retrieve
-- implement user system
-- implement quota
+- all webdav stuff done on a new backend
 
 ## note 18/02
 
