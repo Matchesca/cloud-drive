@@ -1,24 +1,42 @@
 import clsx from "clsx";
 import React from "react";
+import * as motion from "motion/react-client";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
+  variant?: "primary" | "secondary" | "muted" | "outline" | "destructive";
 }
 
+// Custom class to have different types of buttons
+const variantClasses: Record<string, string> = {
+  primary: "bg-black text-white",
+  secondary: "",
+  muted: "",
+  outline: "border border-black",
+  destructive: "",
+};
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, className, ...props }, ref) => {
+  ({ children, className, variant = "primary", ...props }, ref) => {
     return (
-      <button
-        className={clsx(
-          "inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] bg-black px-4 text-white disabled:opacity-50",
-          className,
-        )}
-        ref={ref}
-        {...props}
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="w-full"
       >
-        {children}
-      </button>
+        <button
+          className={clsx(
+            "inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] px-4 disabled:opacity-50",
+            variantClasses[variant],
+            className,
+          )}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </button>
+      </motion.div>
     );
   },
 );

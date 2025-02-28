@@ -4,6 +4,8 @@ A better self-hosted cloud storage solution.
 
 # TO-DO
 
+- [ ] Get user files and not mock data
+- [ ] webdav mounted cleanup after deleting users or something to fix already mounted
 - [ ] Add Actual file uploading and storing (WIP)
 - [x] write the db schema
 - [ ] Build ui scaffolding (WIP)
@@ -12,6 +14,8 @@ A better self-hosted cloud storage solution.
 ## Tuesday Feb 25
 
 - all webdav stuff done on a new backend
+- Auth working
+- something with headers gotta look at
 
 ## note 18/02
 

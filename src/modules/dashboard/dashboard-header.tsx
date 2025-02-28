@@ -1,3 +1,5 @@
+import Button from "@/components/Button";
+import { authClient } from "@/lib/auth-client";
 import { Search } from "lucide-react";
 import { Avatar } from "radix-ui";
 
@@ -13,7 +15,10 @@ const DashboardHeader = () => {
         />
       </div>
       <div className="ml-auto flex items-center justify-center rounded-full p-1 transition-colors duration-300 hover:bg-black/10">
-        <Avatar.Root className="inline-flex size-[45px] cursor-pointer select-none items-center justify-center overflow-hidden rounded-full bg-black/10 align-middle">
+        <Avatar.Root
+          onClick={() => authClient.signOut()}
+          className="inline-flex size-[45px] cursor-pointer select-none items-center justify-center overflow-hidden rounded-full bg-black/10 align-middle"
+        >
           <Avatar.Fallback className="leading-1 flex size-full items-center justify-center bg-black text-[15px] font-medium text-white">
             RC
           </Avatar.Fallback>

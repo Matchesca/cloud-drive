@@ -6,9 +6,11 @@ import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
 import { mockData } from "@/lib/mockdata";
 import { StorageItem } from "@/server/db/schema";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MIcon from "@/components/MIcon";
 import Button from "@/components/Button";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const defaultFolder: StorageItem = {
   id: "0",
@@ -23,6 +25,7 @@ const defaultFolder: StorageItem = {
 const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
+  const router = useRouter();
 
   const filteredRows: StorageItem[] = useMemo(() => {
     return mockData.filter((item) => item.parentId === activeFolder.id);
@@ -35,6 +38,18 @@ const Dashboard = () => {
       setFolderPath((prevPath) => [...prevPath, folder]); // Add to breadcrumb
     }
   };
+
+  // Auth safety basically
+  useEffect(() => {
+    async function check() {
+      const session = await authClient.getSession();
+      if (!session.data?.user) {
+        router.push("/");
+      }
+    }
+
+    check();
+  }, []);
 
   const onNavigate = (folderId: string | null) => {
     if (folderId === null) {
