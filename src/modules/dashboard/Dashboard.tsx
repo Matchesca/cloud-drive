@@ -4,54 +4,105 @@ import { ArrowLeft } from "lucide-react";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
-import { mockData } from "@/lib/mockdata";
-import { StorageItem } from "@/server/db/schema";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MIcon from "@/components/MIcon";
 import Button from "@/components/Button";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { webdavClient } from "@/lib/webdav-client";
+import { User } from "better-auth/types";
+
+export type StorageItem = {
+  id: number;
+  name: string;
+  url: string;
+  type: "Folder" | "File";
+  parentId: number;
+  date: string;
+  shared: boolean;
+};
 
 const defaultFolder: StorageItem = {
-  id: "0",
+  id: 0,
   name: "Drive",
   url: "",
   type: "Folder",
-  parentId: "0",
+  parentId: 0,
   date: "",
   shared: false,
+};
+
+type BackendResponse = {
+  path: string;
+  createdAt: string;
+  id: number;
+  name: string;
+  parentId: number;
+  size: string;
+  type: "Folder" | "File";
+  updatedAt: string;
+  userId: string;
 };
 
 const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
+  const [filteredRows, setFilteredRows] = useState<StorageItem[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  const filteredRows: StorageItem[] = useMemo(() => {
-    return mockData.filter((item) => item.parentId === activeFolder.id);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // retrieve drive data
+
+  useEffect(() => {
+    axios({
+      url: `${process.env.NEXT_PUBLIC_SERVER}/drive/get-files-for-parent`,
+      data: { parentId: activeFolder.id },
+      method: "POST",
+      withCredentials: true,
+    })
+      .then((response) => {
+        const items: BackendResponse[] = response.data;
+        const itemArray: StorageItem[] = items.map((item) => ({
+          id: item.id,
+          url: item.path,
+          name: item.name,
+          parentId: item.parentId,
+          shared: false,
+          type: item.type,
+          date: item.createdAt,
+        }));
+        setFilteredRows(itemArray);
+      })
+      .catch((error) => {
+        console.error(error);
+        setFilteredRows([]);
+      });
   }, [activeFolder]);
 
-  const handleFolderClick = (folderId: string) => {
-    const folder = mockData.find((item) => item.id === folderId);
+  const handleFolderClick = (folderId: number) => {
+    const folder = filteredRows.find((item) => item.id === folderId);
     if (folder) {
       setActiveFolder(folder);
       setFolderPath((prevPath) => [...prevPath, folder]); // Add to breadcrumb
     }
   };
 
-  // Auth safety basically
+  // Auth safety
   useEffect(() => {
     async function check() {
       const session = await authClient.getSession();
       if (!session.data?.user) {
         router.push("/");
       }
+      setUser(session.data!.user);
     }
-
     check();
   }, []);
 
-  const onNavigate = (folderId: string | null) => {
+  const onNavigate = (folderId: number | null) => {
     if (folderId === null) {
       // Reset to root
       setActiveFolder(defaultFolder);
@@ -64,8 +115,49 @@ const Dashboard = () => {
       });
 
       // Update active folder
-      const folder = mockData.find((item) => item.id === folderId);
+      const folder = folderPath.find((item) => item.id === folderId);
       setActiveFolder(folder!);
+    }
+  };
+
+  // Handler for file input change
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+
+      // Decode the file name in case it's URL encoded
+      const decodedFileName = decodeURIComponent(file!.name);
+
+      // Build the path based on the current folder structure
+      let path = "";
+      folderPath.forEach((folder: StorageItem) => {
+        path += folder.name + "/";
+      });
+
+      // Final upload path (e.g., "userId/Folder1/Folder2/filename.ext")
+      const uploadPath = `${user?.id}/${path}${decodedFileName}`;
+
+      try {
+        // Read the file as an ArrayBuffer
+        const fileContents = await file!.arrayBuffer();
+
+        // Upload the file via the WebDAV client.
+        await webdavClient.putFileContents(uploadPath, fileContents, {
+          overwrite: true,
+        });
+        console.log("File uploaded successfully");
+
+        // Optionally refresh the file list here
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          console.error("Upload failed: User is exceeding the quota");
+          // Display a message to the user here
+        } else {
+          console.error("Error uploading file", error);
+        }
+      }
     }
   };
 
@@ -80,7 +172,7 @@ const Dashboard = () => {
           <div className="flex flex-col pt-4">
             <h1 className="flex flex-row items-center gap-x-2 text-2xl">
               {/* To render the back button and correct icon */}
-              {activeFolder.id !== "0" && (
+              {activeFolder.id !== 0 && (
                 <>
                   <div
                     className="mr-2 rounded-[12px] hover:bg-gray-100"
@@ -104,8 +196,44 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-x-2">
-            <Button>New Folder</Button>
-            <Button>Upload</Button>
+            <Button
+              onClick={async () => {
+                try {
+                  var path: string = "";
+                  folderPath.forEach((folder: StorageItem) => {
+                    path += folder.name;
+                    path += "/";
+                  });
+                  await webdavClient.createDirectory(
+                    `${user?.id}/${path}Documents`,
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            >
+              New Folder
+            </Button>
+            <Button
+              onClick={async () => {
+                const response = await webdavClient.getDirectoryContents(
+                  `${user?.id}/`,
+                );
+                console.log(response);
+              }}
+            >
+              PROPFIND
+            </Button>
+            <Button onClick={() => fileInputRef.current?.click()}>
+              Upload
+            </Button>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
           </div>
         </div>
         {/* Table to display the StorageItems */}

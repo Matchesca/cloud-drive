@@ -8,11 +8,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { StorageItem } from "@/lib/mockdata";
+import { StorageItem } from "./Dashboard";
 
 interface DashboardBreadcrumbProps {
   folderPath: StorageItem[];
-  onNavigate: (folderId: string | null) => void;
+  onNavigate: (folderId: number | null) => void;
 }
 
 const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({

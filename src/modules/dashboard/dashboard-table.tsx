@@ -6,11 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StorageItem } from "@/lib/mockdata";
+import { StorageItem } from "@/server/db/schema";
 
 interface DashboardTableProps {
   rows: StorageItem[];
-  handleFolderClick: (folderId: string) => void;
+  handleFolderClick: (folderId: number) => void;
 }
 
 const DashboardTable: React.FC<DashboardTableProps> = ({
