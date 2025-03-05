@@ -1,12 +1,49 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { StorageItem } from "@/server/db/schema";
+import { StorageItem } from "./Dashboard";
+import { formatDate, getDecodedFileName, formatBytes } from "@/lib/utils";
+
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/DataTable";
+import MIcon from "@/components/MIcon";
+
+export const columns: ColumnDef<StorageItem>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell({ row }) {
+      const name: string = row.getValue("name");
+      const formattedName = getDecodedFileName(name);
+
+      return (
+        <div className="flex flex-row items-center gap-x-2">
+          <MIcon type={row.getValue("type")} />
+          {formattedName}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+  },
+  {
+    accessorKey: "size",
+    header: "Size",
+    cell({ row }) {
+      return <div>{formatBytes(row.getValue("size"))}</div>;
+    },
+  },
+  {
+    accessorKey: "date",
+    header: "Date",
+    cell({ row }) {
+      return <div>{formatDate(row.getValue("date"))}</div>;
+    },
+  },
+  {
+    accessorKey: "shared",
+    header: "Shared",
+  },
+];
 
 interface DashboardTableProps {
   rows: StorageItem[];
@@ -19,38 +56,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
 }) => {
   return (
     <div className="flex w-full overflow-auto pt-4">
-      <Table className="w-full">
-        <TableHeader className="sticky top-0 bg-white shadow-lg shadow-black/5">
-          <TableRow className="text-black/60">
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Shared</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row: StorageItem, index: number) => {
-            return (
-              <TableRow
-                key={index}
-                className="rounded-[12px] text-[16px] hover:bg-gray-100"
-                onClick={() => {
-                  if (row.type === "Folder") {
-                    handleFolderClick(row.id);
-                  }
-                }}
-              >
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.type}</TableCell>
-                <TableCell>{row.size ? row.size : "-"}</TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>{row.shared}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+      <DataTable columns={columns} data={rows} />
     </div>
   );
 };

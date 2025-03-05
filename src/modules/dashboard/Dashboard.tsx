@@ -12,14 +12,23 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { webdavClient } from "@/lib/webdav-client";
 import { User } from "better-auth/types";
+import Spinner from "@/components/Spinner";
 
 export type StorageItem = {
   id: number;
   name: string;
   url: string;
-  type: "Folder" | "File";
+  type:
+    | "Folder"
+    | "File"
+    | "PDF"
+    | "Word Document"
+    | "Python Script"
+    | "PNG"
+    | "Presentation";
   parentId: number;
   date: string;
+  size?: number;
   shared: boolean;
 };
 
@@ -39,7 +48,7 @@ type BackendResponse = {
   id: number;
   name: string;
   parentId: number;
-  size: string;
+  size: number;
   type: "Folder" | "File";
   updatedAt: string;
   userId: string;
@@ -49,6 +58,7 @@ const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
   const [filteredRows, setFilteredRows] = useState<StorageItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
@@ -57,52 +67,75 @@ const Dashboard = () => {
   // retrieve drive data
 
   useEffect(() => {
-    axios({
-      url: `${process.env.NEXT_PUBLIC_SERVER}/drive/get-files-for-parent`,
-      data: { parentId: activeFolder.id },
-      method: "POST",
-      withCredentials: true,
-    })
-      .then((response) => {
-        const items: BackendResponse[] = response.data;
-        const itemArray: StorageItem[] = items.map((item) => ({
-          id: item.id,
-          url: item.path,
-          name: item.name,
-          parentId: item.parentId,
-          shared: false,
-          type: item.type,
-          date: item.createdAt,
-        }));
-        setFilteredRows(itemArray);
-      })
-      .catch((error) => {
-        console.error(error);
-        setFilteredRows([]);
-      });
+    async function fetchFiles() {
+      setLoading(true);
+      try {
+        axios({
+          url: `${process.env.NEXT_PUBLIC_SERVER}/drive/get-files-for-parent`,
+          data: { parentId: activeFolder.id },
+          method: "POST",
+          withCredentials: true,
+        })
+          .then((response) => {
+            const items: BackendResponse[] = response.data;
+            const itemArray: StorageItem[] = items.map((item) => ({
+              id: item.id,
+              url: item.path,
+              name: item.name,
+              size: item.size,
+              parentId: item.parentId,
+              shared: false,
+              type: item.type,
+              date: item.createdAt,
+            }));
+            setFilteredRows(itemArray);
+          })
+          .catch((error) => {
+            console.error(error);
+            setFilteredRows([]);
+          });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFiles();
   }, [activeFolder]);
 
   const handleFolderClick = (folderId: number) => {
+    setLoading(true);
     const folder = filteredRows.find((item) => item.id === folderId);
     if (folder) {
       setActiveFolder(folder);
       setFolderPath((prevPath) => [...prevPath, folder]); // Add to breadcrumb
     }
+    setLoading(false);
   };
 
-  // Auth safety
+  // Auth safety check
   useEffect(() => {
-    async function check() {
-      const session = await authClient.getSession();
-      if (!session.data?.user) {
-        router.push("/");
+    const checkAuth = async () => {
+      setLoading(true);
+      try {
+        const session = await authClient.getSession();
+        if (!session.data?.user) {
+          router.push("/");
+        } else {
+          setUser(session.data.user);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-      setUser(session.data!.user);
-    }
-    check();
-  }, []);
+    };
+
+    checkAuth();
+  }, [router]);
 
   const onNavigate = (folderId: number | null) => {
+    setLoading(true);
     if (folderId === null) {
       // Reset to root
       setActiveFolder(defaultFolder);
@@ -118,6 +151,7 @@ const Dashboard = () => {
       const folder = folderPath.find((item) => item.id === folderId);
       setActiveFolder(folder!);
     }
+    setLoading(false);
   };
 
   // Handler for file input change
@@ -126,6 +160,7 @@ const Dashboard = () => {
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
+      console.log(file);
 
       // Decode the file name in case it's URL encoded
       const decodedFileName = decodeURIComponent(file!.name);
@@ -164,86 +199,95 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
-      <div className="flex min-h-0 flex-1 flex-col p-4 pl-6">
-        <DashboardBreadcrumb folderPath={folderPath} onNavigate={onNavigate} />
+      {loading ? (
+        <div className="flex min-h-0 flex-1 items-center justify-center p-4 pl-6">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col p-4 pl-6">
+          <DashboardBreadcrumb
+            folderPath={folderPath}
+            onNavigate={onNavigate}
+          />
 
-        {/* Current Folder Header */}
-        <div className="flex flex-row">
-          <div className="flex flex-col pt-4">
-            <h1 className="flex flex-row items-center gap-x-2 text-2xl">
-              {/* To render the back button and correct icon */}
-              {activeFolder.id !== 0 && (
-                <>
-                  <div
-                    className="mr-2 rounded-[12px] hover:bg-gray-100"
-                    onClick={() => {
-                      if (folderPath.length > 1) {
-                        onNavigate(folderPath[folderPath.length - 2]!.id);
-                      } else {
-                        onNavigate(null);
-                      }
-                    }}
-                  >
-                    <ArrowLeft className="p-1" size={25} />
-                  </div>
-                  <MIcon type={activeFolder.type} />
-                </>
-              )}
-              {activeFolder.name}
-            </h1>
-            <span className="text-[13px] text-neutral-600">
-              21 items, 34.2 GB
-            </span>
-          </div>
-          <div className="ml-auto flex items-center gap-x-2">
-            <Button
-              onClick={async () => {
-                try {
-                  var path: string = "";
-                  folderPath.forEach((folder: StorageItem) => {
-                    path += folder.name;
-                    path += "/";
-                  });
-                  await webdavClient.createDirectory(
-                    `${user?.id}/${path}Documents`,
+          {/* Current Folder Header */}
+          <div className="flex flex-row">
+            <div className="flex flex-col pt-4">
+              <h1 className="flex flex-row items-center gap-x-2 text-2xl">
+                {/* To render the back button and correct icon */}
+                {activeFolder.id !== 0 && (
+                  <>
+                    <div
+                      className="mr-2 rounded-[12px] hover:bg-gray-100"
+                      onClick={() => {
+                        if (folderPath.length > 1) {
+                          onNavigate(folderPath[folderPath.length - 2]!.id);
+                        } else {
+                          onNavigate(null);
+                        }
+                      }}
+                    >
+                      <ArrowLeft className="p-1" size={25} />
+                    </div>
+                    <MIcon type={activeFolder.type} />
+                  </>
+                )}
+                {activeFolder.name}
+              </h1>
+              <span className="text-[13px] text-neutral-600">
+                21 items, 34.2 GB
+              </span>
+            </div>
+            <div className="ml-auto flex items-center gap-x-2">
+              <Button
+                onClick={async () => {
+                  try {
+                    var path: string = "";
+                    folderPath.forEach((folder: StorageItem) => {
+                      path += folder.name;
+                      path += "/";
+                    });
+                    await webdavClient.createDirectory(
+                      `${user?.id}/${path}Photos`,
+                    );
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }}
+              >
+                New Folder
+              </Button>
+              <Button
+                onClick={async () => {
+                  const response = await webdavClient.getDirectoryContents(
+                    `${user?.id}/Photos`,
                   );
-                } catch (error) {
-                  console.log(error);
-                }
-              }}
-            >
-              New Folder
-            </Button>
-            <Button
-              onClick={async () => {
-                const response = await webdavClient.getDirectoryContents(
-                  `${user?.id}/`,
-                );
-                console.log(response);
-              }}
-            >
-              PROPFIND
-            </Button>
-            <Button onClick={() => fileInputRef.current?.click()}>
-              Upload
-            </Button>
-            {/* Hidden file input */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileUpload}
+                  console.log(response);
+                }}
+              >
+                PROPFIND
+              </Button>
+              <Button onClick={() => fileInputRef.current?.click()}>
+                Upload
+              </Button>
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileUpload}
+              />
+            </div>
+          </div>
+          {/* Table to display the StorageItems */}
+          <div className="flex min-h-0 flex-1">
+            <DashboardTable
+              rows={filteredRows}
+              handleFolderClick={handleFolderClick}
             />
           </div>
         </div>
-        {/* Table to display the StorageItems */}
-        <div className="flex min-h-0 flex-1">
-          <DashboardTable
-            rows={filteredRows}
-            handleFolderClick={handleFolderClick}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

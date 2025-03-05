@@ -1,8 +1,8 @@
-import { StorageItemTypes } from "@/server/db/schema";
+import { StorageItem } from "@/modules/dashboard/Dashboard";
 import { Folder, FileText, Code, Presentation, Image } from "lucide-react";
 
 interface MIconProps {
-  type: StorageItemTypes;
+  type: StorageItem["type"];
 }
 
 const MIcon: React.FC<MIconProps> = ({ type }) => {
