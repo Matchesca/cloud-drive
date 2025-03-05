@@ -44,18 +44,6 @@ const defaultFolder: StorageItem = {
   shared: false,
 };
 
-type BackendResponse = {
-  path: string;
-  createdAt: string;
-  id: number;
-  name: string;
-  parentId: number;
-  size: number;
-  type: StorageItem["type"];
-  updatedAt: string;
-  userId: string;
-};
-
 const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
@@ -182,7 +170,7 @@ const Dashboard = () => {
               <Button
                 onClick={async () => {
                   const response = await webdavClient.getDirectoryContents(
-                    `${user?.id}/Photos`,
+                    `${user?.id}/`,
                   );
                   console.log(response);
                 }}

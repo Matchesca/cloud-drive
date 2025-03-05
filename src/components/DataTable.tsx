@@ -44,7 +44,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full rounded-lg">
-      <Table>
+      <Table className="w-full table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
@@ -53,7 +53,10 @@ export function DataTable<TData, TValue>({
             >
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="">
+                  <TableHead
+                    key={header.id}
+                    style={{ width: `${header.getSize()}px` }}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -75,8 +78,8 @@ export function DataTable<TData, TValue>({
                 onDoubleClick={() => onRowDoubleClick?.(row.original)}
                 className={
                   row.getIsSelected()
-                    ? "select-none rounded-[12px] bg-black text-white transition-all duration-300 hover:bg-black hover:text-white"
-                    : "select-none rounded-[12px] hover:bg-gray-100"
+                    ? "group select-none rounded-[12px] bg-black text-white transition-all duration-100 hover:bg-black hover:text-white"
+                    : "group select-none rounded-[12px] hover:bg-gray-100"
                 }
               >
                 {row.getVisibleCells().map((cell) => (

@@ -4,20 +4,16 @@ A better self-hosted cloud storage solution.
 
 # TO-DO
 
-- [x] Get user files and not mock data
-- [ ] webdav mounted cleanup after deleting users or something to fix already mounted
 - [ ] File uploading ux
 - [ ] Folder creation ux (WIP)
 - [x] Add Actual file uploading and storing
-- [x] write the db schema
 - [ ] Build ui scaffolding (WIP)
-- [x] Add auth
+- [ ] webdav mounted cleanup after deleting users or something to fix already mounted
 
 ## Wednesday March 5
 
-- Working on making the ux stuff now for uploading/downloading/folder
+- Working on making the ux stuff now for uploading/downloading/folder (dropdown menu)
 - Should start working on file types
-- Fix quota issue
 
 ## Tuesday March 4
 

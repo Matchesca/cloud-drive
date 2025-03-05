@@ -4,12 +4,15 @@ import { formatDate, getDecodedFileName, formatBytes } from "@/lib/utils";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { DataTable } from "@/components/DataTable";
 import MIcon from "@/components/MIcon";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
+import clsx from "clsx";
+import { MoreHorizontal } from "lucide-react";
 
 export const columns: ColumnDef<StorageItem>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    size: 200,
     cell({ row }) {
       const name: string = row.getValue("name");
       const formattedName = getDecodedFileName(name);
@@ -25,10 +28,12 @@ export const columns: ColumnDef<StorageItem>[] = [
   {
     accessorKey: "type",
     header: "Type",
+    size: 80,
   },
   {
     accessorKey: "size",
     header: "Size",
+    size: 50,
     cell({ row }) {
       return <div>{formatBytes(row.getValue("size"))}</div>;
     },
@@ -36,6 +41,7 @@ export const columns: ColumnDef<StorageItem>[] = [
   {
     accessorKey: "date",
     header: "Date",
+    size: 120,
     cell({ row }) {
       return <div>{formatDate(row.getValue("date"))}</div>;
     },
@@ -43,6 +49,22 @@ export const columns: ColumnDef<StorageItem>[] = [
   {
     accessorKey: "shared",
     header: "Shared",
+    size: 80,
+  },
+  {
+    header: "",
+    accessorKey: "actionColumn",
+    size: 30,
+    cell: ({ row }) => (
+      <div
+        className={clsx(
+          "group-hover:opacity-100",
+          row.getIsSelected() ? "cursor-pointer opacity-100" : "opacity-0",
+        )}
+      >
+        <MoreHorizontal />
+      </div>
+    ),
   },
 ];
 
@@ -66,7 +88,11 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
         data={rows}
         setRowSelection={setRowSelection}
         rowSelection={rowSelection}
-        onRowDoubleClick={(row) => handleFolderClick(row.id)}
+        onRowDoubleClick={(row) => {
+          if (row.type === "Folder") {
+            handleFolderClick(row.id);
+          }
+        }}
       />
     </div>
   );
