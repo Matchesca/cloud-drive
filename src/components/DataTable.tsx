@@ -1,9 +1,8 @@
-"use client";
-
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -15,34 +14,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dispatch, SetStateAction } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
+  rowSelection: RowSelectionState;
+  onRowDoubleClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  setRowSelection,
+  rowSelection,
+  onRowDoubleClick,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    enableMultiRowSelection: false,
+    state: {
+      rowSelection,
+    },
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full rounded-lg">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="text-black/60">
+            <TableRow
+              key={headerGroup.id}
+              className="text-black/60 shadow-lg shadow-black/5"
+            >
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead
-                    key={header.id}
-                    className="shadow-lg shadow-black/5"
-                  >
+                  <TableHead key={header.id} className="">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -60,7 +71,13 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
+                onClick={row.getToggleSelectedHandler()}
+                onDoubleClick={() => onRowDoubleClick?.(row.original)}
+                className={
+                  row.getIsSelected()
+                    ? "select-none rounded-[12px] bg-black text-white transition-all duration-300 hover:bg-black hover:text-white"
+                    : "select-none rounded-[12px] hover:bg-gray-100"
+                }
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className="text-[16px]">

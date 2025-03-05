@@ -1,9 +1,10 @@
 import { StorageItem } from "./Dashboard";
 import { formatDate, getDecodedFileName, formatBytes } from "@/lib/utils";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { DataTable } from "@/components/DataTable";
 import MIcon from "@/components/MIcon";
+import { Dispatch, SetStateAction, useState } from "react";
 
 export const columns: ColumnDef<StorageItem>[] = [
   {
@@ -48,15 +49,25 @@ export const columns: ColumnDef<StorageItem>[] = [
 interface DashboardTableProps {
   rows: StorageItem[];
   handleFolderClick: (folderId: number) => void;
+  rowSelection: RowSelectionState;
+  setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
 }
 
 const DashboardTable: React.FC<DashboardTableProps> = ({
   rows,
   handleFolderClick,
+  rowSelection,
+  setRowSelection,
 }) => {
   return (
     <div className="flex w-full overflow-auto pt-4">
-      <DataTable columns={columns} data={rows} />
+      <DataTable
+        columns={columns}
+        data={rows}
+        setRowSelection={setRowSelection}
+        rowSelection={rowSelection}
+        onRowDoubleClick={(row) => handleFolderClick(row.id)}
+      />
     </div>
   );
 };

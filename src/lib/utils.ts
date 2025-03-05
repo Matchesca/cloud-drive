@@ -1,3 +1,4 @@
+import { StorageItem } from "@/modules/dashboard/Dashboard";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -47,4 +48,20 @@ export function formatBytes(bytes: number, decimals = 0): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   const value = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
   return `${value} ${sizes[i]}`;
+}
+
+/**
+ * Calculates the size of all items in the current active folder.
+ * @param filteredRows: StorageItem[] - the content of the drive.
+ * @returns Size of the folder added up (e.g., "2134").
+ */
+export function getSizeOfFolder(filteredRows: StorageItem[]) {
+  var size: number = 0;
+  filteredRows.forEach((item) => {
+    if (item.size) {
+      size += item.size;
+    }
+  });
+
+  return size;
 }

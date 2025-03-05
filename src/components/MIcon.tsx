@@ -1,5 +1,12 @@
 import { StorageItem } from "@/modules/dashboard/Dashboard";
-import { Folder, FileText, Code, Presentation, Image } from "lucide-react";
+import {
+  Folder,
+  FileText,
+  Code,
+  Presentation,
+  Image,
+  File,
+} from "lucide-react";
 
 interface MIconProps {
   type: StorageItem["type"];
@@ -19,6 +26,8 @@ const MIcon: React.FC<MIconProps> = ({ type }) => {
       return <Presentation />;
     case "PNG":
       return <Image />;
+    case "File":
+      return <File />;
     default:
       return null;
   }

@@ -7,12 +7,14 @@ import DashboardTable from "./dashboard-table";
 import { useEffect, useRef, useState } from "react";
 import MIcon from "@/components/MIcon";
 import Button from "@/components/Button";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import axios from "axios";
 import { webdavClient } from "@/lib/webdav-client";
-import { User } from "better-auth/types";
 import Spinner from "@/components/Spinner";
+import { RowSelectionState } from "@tanstack/react-table";
+import { formatBytes, getSizeOfFolder } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useDriveData } from "@/hooks/useDriveData";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useRouter } from "next/navigation";
 
 export type StorageItem = {
   id: number;
@@ -49,7 +51,7 @@ type BackendResponse = {
   name: string;
   parentId: number;
   size: number;
-  type: "Folder" | "File";
+  type: StorageItem["type"];
   updatedAt: string;
   userId: string;
 };
@@ -57,51 +59,18 @@ type BackendResponse = {
 const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
-  const [filteredRows, setFilteredRows] = useState<StorageItem[]>([]);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [loading, setLoading] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // retrieve drive data
-
-  useEffect(() => {
-    async function fetchFiles() {
-      setLoading(true);
-      try {
-        axios({
-          url: `${process.env.NEXT_PUBLIC_SERVER}/drive/get-files-for-parent`,
-          data: { parentId: activeFolder.id },
-          method: "POST",
-          withCredentials: true,
-        })
-          .then((response) => {
-            const items: BackendResponse[] = response.data;
-            const itemArray: StorageItem[] = items.map((item) => ({
-              id: item.id,
-              url: item.path,
-              name: item.name,
-              size: item.size,
-              parentId: item.parentId,
-              shared: false,
-              type: item.type,
-              date: item.createdAt,
-            }));
-            setFilteredRows(itemArray);
-          })
-          .catch((error) => {
-            console.error(error);
-            setFilteredRows([]);
-          });
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchFiles();
-  }, [activeFolder]);
+  const { user, authLoading } = useAuth();
+  const {
+    driveFiles: filteredRows,
+    dataLoading,
+    refetch,
+  } = useDriveData(activeFolder);
+  const { uploadFile, uploading } = useFileUpload(user?.id, folderPath);
 
   const handleFolderClick = (folderId: number) => {
     setLoading(true);
@@ -112,27 +81,6 @@ const Dashboard = () => {
     }
     setLoading(false);
   };
-
-  // Auth safety check
-  useEffect(() => {
-    const checkAuth = async () => {
-      setLoading(true);
-      try {
-        const session = await authClient.getSession();
-        if (!session.data?.user) {
-          router.push("/");
-        } else {
-          setUser(session.data.user);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   const onNavigate = (folderId: number | null) => {
     setLoading(true);
@@ -161,45 +109,17 @@ const Dashboard = () => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       console.log(file);
-
-      // Decode the file name in case it's URL encoded
-      const decodedFileName = decodeURIComponent(file!.name);
-
-      // Build the path based on the current folder structure
-      let path = "";
-      folderPath.forEach((folder: StorageItem) => {
-        path += folder.name + "/";
-      });
-
-      // Final upload path (e.g., "userId/Folder1/Folder2/filename.ext")
-      const uploadPath = `${user?.id}/${path}${decodedFileName}`;
-
-      try {
-        // Read the file as an ArrayBuffer
-        const fileContents = await file!.arrayBuffer();
-
-        // Upload the file via the WebDAV client.
-        await webdavClient.putFileContents(uploadPath, fileContents, {
-          overwrite: true,
-        });
-        console.log("File uploaded successfully");
-
-        // Optionally refresh the file list here
-      } catch (error: any) {
-        if (error.response && error.response.status === 403) {
-          console.error("Upload failed: User is exceeding the quota");
-          // Display a message to the user here
-        } else {
-          console.error("Error uploading file", error);
-        }
+      if (file) {
+        await uploadFile(file);
       }
     }
+    refetch();
   };
 
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
-      {loading ? (
+      {loading || authLoading || dataLoading ? (
         <div className="flex min-h-0 flex-1 items-center justify-center p-4 pl-6">
           <Spinner />
         </div>
@@ -235,7 +155,8 @@ const Dashboard = () => {
                 {activeFolder.name}
               </h1>
               <span className="text-[13px] text-neutral-600">
-                21 items, 34.2 GB
+                {filteredRows.length} items,{" "}
+                {formatBytes(getSizeOfFolder(filteredRows))}
               </span>
             </div>
             <div className="ml-auto flex items-center gap-x-2">
@@ -248,8 +169,9 @@ const Dashboard = () => {
                       path += "/";
                     });
                     await webdavClient.createDirectory(
-                      `${user?.id}/${path}Photos`,
+                      `${user?.id}/${path}Documents`,
                     );
+                    router.refresh();
                   } catch (error) {
                     console.log(error);
                   }
@@ -267,7 +189,11 @@ const Dashboard = () => {
               >
                 PROPFIND
               </Button>
-              <Button onClick={() => fileInputRef.current?.click()}>
+              <Button
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+              >
                 Upload
               </Button>
               {/* Hidden file input */}
@@ -282,6 +208,8 @@ const Dashboard = () => {
           {/* Table to display the StorageItems */}
           <div className="flex min-h-0 flex-1">
             <DashboardTable
+              rowSelection={rowSelection}
+              setRowSelection={setRowSelection}
               rows={filteredRows}
               handleFolderClick={handleFolderClick}
             />
