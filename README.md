@@ -4,11 +4,17 @@ A better self-hosted cloud storage solution.
 
 # TO-DO
 
+- [x] Renaming (annoying)
 - [ ] File uploading ux
 - [ ] Folder creation ux (WIP)
 - [x] Add Actual file uploading and storing
 - [ ] Build ui scaffolding (WIP)
 - [ ] webdav mounted cleanup after deleting users or something to fix already mounted
+
+## Friday Match 7
+
+- Worked on renaming
+- now working on download and then make a new folder ui
 
 ## Wednesday March 5
 

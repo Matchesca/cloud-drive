@@ -65,3 +65,30 @@ export function getSizeOfFolder(filteredRows: StorageItem[]) {
 
   return size;
 }
+
+/**
+ * Calculates the new url/path from the old url to the new url based on a new name.
+ * @param oldUrl: string - the current url.
+ * @param newName: string - the new name of the file
+ * @returns The new constructed url preserving the ext
+ */
+export function computeNewUrl(oldUrl: string, newName: string): string {
+  // Find the folder part (everything up to the last slash)
+  const lastSlashIndex = oldUrl.lastIndexOf("/");
+  const folder = oldUrl.substring(0, lastSlashIndex);
+
+  // Extract the current file name and its extension.
+  const oldFileName = oldUrl.substring(lastSlashIndex + 1);
+  const dotIndex = oldFileName.lastIndexOf(".");
+  let extension = "";
+  if (dotIndex !== -1) {
+    extension = oldFileName.substring(dotIndex); // includes the dot
+  }
+
+  // If newName already contains an extension, leave it as is;
+  // otherwise, append the original extension.
+  const finalName = newName.includes(".") ? newName : newName + extension;
+
+  // Encode the final name to handle spaces and special characters.
+  return folder + "/" + encodeURIComponent(finalName);
+}

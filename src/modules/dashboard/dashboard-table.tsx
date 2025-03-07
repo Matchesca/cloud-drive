@@ -6,16 +6,35 @@ import { DataTable } from "@/components/DataTable";
 import MIcon from "@/components/MIcon";
 import { Dispatch, SetStateAction } from "react";
 import clsx from "clsx";
-import { MoreHorizontal } from "lucide-react";
+import ActionDropdownMenu from "@/components/DropdownMenu";
+import InlineEditableText from "@/components/InlineEditableText";
 
 export const columns: ColumnDef<StorageItem>[] = [
   {
     accessorKey: "name",
     header: "Name",
     size: 200,
-    cell({ row }) {
+    cell({ row, table }) {
       const name: string = row.getValue("name");
       const formattedName = getDecodedFileName(name);
+
+      const { editingItem, setEditingItem } = table.options.meta as {
+        editingItem: StorageItem | null;
+        setEditingItem: Dispatch<SetStateAction<StorageItem | null>>;
+      };
+
+      if (editingItem?.id === row.original.id) {
+        return (
+          <div className="flex flex-row items-center gap-x-2">
+            <MIcon type={row.getValue("type")} />
+            <InlineEditableText
+              setEditingItem={setEditingItem}
+              item={row.original}
+              onCancel={() => setEditingItem(null)}
+            />
+          </div>
+        );
+      }
 
       return (
         <div className="flex flex-row items-center gap-x-2">
@@ -55,16 +74,28 @@ export const columns: ColumnDef<StorageItem>[] = [
     header: "",
     accessorKey: "actionColumn",
     size: 30,
-    cell: ({ row }) => (
-      <div
-        className={clsx(
-          "group-hover:opacity-100",
-          row.getIsSelected() ? "cursor-pointer opacity-100" : "opacity-0",
-        )}
-      >
-        <MoreHorizontal />
-      </div>
-    ),
+    cell: ({ row, table }) => {
+      // Retrieve editing state and its setter from table meta.
+      const { editingItem, setEditingItem } = table.options.meta as {
+        editingItem: StorageItem | null;
+        setEditingItem: Dispatch<SetStateAction<StorageItem | null>>;
+      };
+
+      return (
+        <div
+          className={clsx(
+            "group-hover:opacity-100",
+            row.getIsSelected() ? "cursor-pointer opacity-100" : "opacity-0",
+          )}
+        >
+          <ActionDropdownMenu
+            row={row}
+            editingItem={editingItem!}
+            setEditingItem={setEditingItem}
+          />
+        </div>
+      );
+    },
   },
 ];
 
@@ -72,6 +103,8 @@ interface DashboardTableProps {
   rows: StorageItem[];
   handleFolderClick: (folderId: number) => void;
   rowSelection: RowSelectionState;
+  editingItem: StorageItem | null;
+  setEditingItem: Dispatch<SetStateAction<StorageItem | null>>;
   setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
 }
 
@@ -80,6 +113,8 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   handleFolderClick,
   rowSelection,
   setRowSelection,
+  editingItem,
+  setEditingItem,
 }) => {
   return (
     <div className="flex w-full overflow-auto pt-4">
@@ -88,6 +123,8 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
         data={rows}
         setRowSelection={setRowSelection}
         rowSelection={rowSelection}
+        editingItem={editingItem}
+        setEditingItem={setEditingItem}
         onRowDoubleClick={(row) => {
           if (row.type === "Folder") {
             handleFolderClick(row.id);

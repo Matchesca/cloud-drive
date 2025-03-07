@@ -15,12 +15,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Dispatch, SetStateAction } from "react";
+import { StorageItem } from "@/modules/dashboard/Dashboard";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
   rowSelection: RowSelectionState;
+  editingItem: StorageItem | null;
+  setEditingItem: Dispatch<SetStateAction<StorageItem | null>>;
   onRowDoubleClick?: (row: TData) => void;
 }
 
@@ -29,6 +32,8 @@ export function DataTable<TData, TValue>({
   data,
   setRowSelection,
   rowSelection,
+  editingItem,
+  setEditingItem,
   onRowDoubleClick,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
@@ -40,12 +45,16 @@ export function DataTable<TData, TValue>({
     state: {
       rowSelection,
     },
+    meta: {
+      editingItem,
+      setEditingItem, // Pass the setState function here.
+    },
   });
 
   return (
-    <div className="w-full rounded-lg">
+    <div className="flex w-full rounded-lg">
       <Table className="w-full table-fixed">
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-white">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
