@@ -6,6 +6,9 @@ import {
   Presentation,
   Image,
   File,
+  FileSpreadsheet,
+  FileAudio,
+  FileVideo,
 } from "lucide-react";
 
 interface MIconProps {
@@ -15,9 +18,9 @@ interface MIconProps {
 const MIcon: React.FC<MIconProps> = ({ type }) => {
   switch (type) {
     case "Folder":
-      return <Folder />;
+      return <Folder className="text-violet-500" />;
     case "PDF":
-      return <FileText />;
+      return <FileText className="text-violet-500" />; // Using FileText as a stand-in for PDF
     case "Word Document":
       return <FileText />;
     case "Python Script":
@@ -25,7 +28,19 @@ const MIcon: React.FC<MIconProps> = ({ type }) => {
     case "Presentation":
       return <Presentation />;
     case "PNG":
-      return <Image />;
+      return <Image className="text-blue-500" />;
+    case "Excel Document":
+      return <FileSpreadsheet className="text-green-500" />;
+    case "Text Document":
+      return <FileText />;
+    case "JPEG Image":
+      return <Image className="text-blue-500" />;
+    case "GIF Image":
+      return <Image className="text-blue-500" />;
+    case "MP3 Audio":
+      return <FileAudio className="text-red-500" />;
+    case "MP4 Video":
+      return <FileVideo className="text-red-500" />;
     case "File":
       return <File />;
     default:

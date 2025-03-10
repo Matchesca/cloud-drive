@@ -39,6 +39,10 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    getRowId(originalRow, index, parent) {
+      const ogRow = originalRow as StorageItem;
+      return ogRow.id;
+    },
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: setRowSelection,
     enableMultiRowSelection: false,
@@ -80,24 +84,29 @@ export function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={row.getToggleSelectedHandler()}
-                onDoubleClick={() => onRowDoubleClick?.(row.original)}
-                className={
-                  row.getIsSelected()
-                    ? "group select-none rounded-[12px] bg-black text-white transition-all duration-100 hover:bg-black hover:text-white"
-                    : "group select-none rounded-[12px] hover:bg-gray-100"
-                }
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-[16px]">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map((row) => {
+              return (
+                <TableRow
+                  key={row.id}
+                  onClick={row.getToggleSelectedHandler()}
+                  onDoubleClick={() => onRowDoubleClick?.(row.original)}
+                  className={
+                    row.getIsSelected()
+                      ? "group select-none rounded-[12px] bg-black text-white transition-all duration-100 hover:bg-black hover:text-white"
+                      : "group select-none rounded-[12px] hover:bg-gray-100"
+                  }
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="text-[16px]">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">

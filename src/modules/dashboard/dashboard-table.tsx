@@ -1,5 +1,10 @@
 import { StorageItem } from "./Dashboard";
-import { formatDate, getDecodedFileName, formatBytes } from "@/lib/utils";
+import {
+  formatDate,
+  getDecodedFileName,
+  formatBytes,
+  getNameWithoutExtension,
+} from "@/lib/utils";
 
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { DataTable } from "@/components/DataTable";
@@ -16,7 +21,7 @@ export const columns: ColumnDef<StorageItem>[] = [
     size: 200,
     cell({ row, table }) {
       const name: string = row.getValue("name");
-      const formattedName = getDecodedFileName(name);
+      const formattedName = getDecodedFileName(getNameWithoutExtension(name));
 
       const { editingItem, setEditingItem } = table.options.meta as {
         editingItem: StorageItem | null;
@@ -37,9 +42,16 @@ export const columns: ColumnDef<StorageItem>[] = [
       }
 
       return (
-        <div className="flex flex-row items-center gap-x-2">
-          <MIcon type={row.getValue("type")} />
-          {formattedName}
+        <div
+          aria-label={formattedName}
+          className="flex flex-row items-center gap-x-2 overflow-hidden"
+        >
+          <div>
+            <MIcon type={row.getValue("type")} />
+          </div>
+          <span className="overflow-hidden text-ellipsis text-nowrap">
+            {formattedName}
+          </span>
         </div>
       );
     },

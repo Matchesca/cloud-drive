@@ -1,4 +1,6 @@
 import { StorageItem } from "@/modules/dashboard/Dashboard";
+import axios from "axios";
+import { User } from "better-auth/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -91,4 +93,64 @@ export function computeNewUrl(oldUrl: string, newName: string): string {
 
   // Encode the final name to handle spaces and special characters.
   return folder + "/" + encodeURIComponent(finalName);
+}
+
+/**
+ * Returns the file name without its extension.
+ *
+ * @param fileName - The full file name (e.g. "document.pdf" or "archive.tar.gz")
+ * @returns The file name without the last extension (e.g. "document" or "archive.tar")
+ */
+export function getNameWithoutExtension(fileName: string): string {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) return fileName; // no extension found
+  return fileName.substring(0, lastDotIndex);
+}
+
+/**
+ * Return the resource from resourceId.
+ *
+ * @param resources - StorageItem[] - List of all the resources.
+ * @returns The resource item or undefined.
+ */
+export function findResourceById(
+  resources: StorageItem[],
+  resourceId: string | undefined,
+): StorageItem | undefined {
+  if (!resourceId) {
+    return;
+  }
+  const resource = resources.find(
+    (resource) => resource.id === parseInt(resourceId),
+  );
+  return resource;
+}
+
+export async function downloadFileAsBlob(
+  user: User,
+  resource: StorageItem,
+): Promise<Blob> {
+  const fileUrl = `${process.env.NEXT_PUBLIC_WEBDAV_CLIENT}/${user.id}${resource.url}`;
+
+  // Make the GET request with responseType set to 'blob'
+  const response = await axios.get(fileUrl, {
+    method: "GET",
+    responseType: "blob",
+    withCredentials: true,
+  });
+  return response.data;
+}
+
+export function triggerDownload(blob: Blob, filename: string) {
+  // Create a temporary object URL for the Blob
+  const url = window.URL.createObjectURL(blob);
+  // Create a temporary link element
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  // Clean up
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 }

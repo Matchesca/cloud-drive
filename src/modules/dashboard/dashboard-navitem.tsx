@@ -1,4 +1,5 @@
 import { Link, LucideIcon } from "lucide-react";
+import * as motion from "motion/react-client";
 import clsx from "clsx";
 
 interface DashboardNavItemProps {
@@ -15,7 +16,9 @@ const DashboardNavItem: React.FC<DashboardNavItemProps> = ({
   active,
 }) => {
   return (
-    <div
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       className={clsx(
         "mb-1 flex cursor-pointer flex-row items-center gap-x-4 rounded-[12px] p-2 text-sm font-light",
         active
@@ -25,7 +28,7 @@ const DashboardNavItem: React.FC<DashboardNavItemProps> = ({
     >
       <Icon size={20} />
       {label}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,11 +1,9 @@
 import React from "react";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { StorageItem } from "./Dashboard";
@@ -24,7 +22,7 @@ const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink
-            className="cursor-default"
+            className="cursor-default hover:text-violet-500"
             onClick={() => onNavigate(null)}
           >
             Drive
@@ -35,7 +33,7 @@ const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink
-                className="cursor-default"
+                className="cursor-default hover:text-violet-500"
                 onClick={() => onNavigate(folder.id)}
               >
                 {folder.name}

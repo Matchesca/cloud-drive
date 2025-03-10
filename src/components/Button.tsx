@@ -10,9 +10,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 // Custom class to have different types of buttons
 const variantClasses: Record<string, string> = {
-  primary: "bg-black text-white",
-  secondary: "",
-  muted: "",
+  primary: "bg-violet-500 text-white",
+  secondary: "border-[1px] border-black/10 bg-white text-black",
+  ghost: "text-black border-none",
   outline: "border border-black",
   destructive: "",
 };

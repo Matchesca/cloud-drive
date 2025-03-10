@@ -46,7 +46,7 @@ const ActionDropdownMenu: React.FC<ActionDropdownMenuProps> = ({
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-56 rounded-[12px] border-[1px] border-black/5 bg-white p-[5px] text-sm shadow-xl shadow-black/40"
+          className="w-56 rounded-[12px] border-[1px] border-black/5 bg-white p-[5px] text-sm shadow-lg shadow-black/40"
           sideOffset={5}
           collisionPadding={{ right: 15 }}
         >
@@ -61,14 +61,14 @@ const ActionDropdownMenu: React.FC<ActionDropdownMenuProps> = ({
                   item.action(row.original);
                 }
               }}
-              className="flex flex-row items-center gap-x-4 rounded-[8px] p-[4px] outline-none hover:bg-gray-200"
+              className="flex select-none flex-row items-center gap-x-4 rounded-[8px] p-[4px] outline-none hover:bg-gray-200"
             >
               <item.Icon size={16} />
               {item.label}
             </DropdownMenu.Item>
           ))}
           <DropdownMenu.Separator className="m-[3px] h-px bg-black/5" />
-          <DropdownMenu.Item className="flex flex-row items-center gap-x-4 rounded-[8px] p-[4px] text-red-500 outline-none hover:bg-gray-300">
+          <DropdownMenu.Item className="flex select-none flex-row items-center gap-x-4 rounded-[8px] p-[4px] text-red-500 outline-none hover:bg-gray-200">
             <Trash size={17} />
             Delete
           </DropdownMenu.Item>

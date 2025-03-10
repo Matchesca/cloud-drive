@@ -71,7 +71,7 @@ const Authenticate = () => {
         }}
       >
         {/* Container */}
-        <motion.div className="flex w-96 flex-col justify-between rounded-[12px] border border-black">
+        <motion.div className="flex w-96 flex-col justify-between rounded-[12px] border border-black/5 shadow-lg shadow-black/40">
           {isLogin ? (
             <>
               <div className="p-4">

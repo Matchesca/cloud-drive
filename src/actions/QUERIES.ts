@@ -1,3 +1,4 @@
+import { webdavClient } from "@/lib/webdav-client";
 import { StorageItem } from "@/modules/dashboard/Dashboard";
 import axios from "axios";
 
@@ -26,6 +27,13 @@ export const QUERIES = {
       }));
 
       return itemArray;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  fetchDriveQuota: async () => {
+    try {
     } catch (error) {
       throw error;
     }

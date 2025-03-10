@@ -22,7 +22,13 @@ const InlineEditableText: React.FC<InlineEditableTextProps> = ({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    inputRef.current?.focus();
+    const timer = setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, 100); // delay 100ms; adjust if needed
+    return () => clearTimeout(timer);
   }, []);
 
   // Keyboard event handler

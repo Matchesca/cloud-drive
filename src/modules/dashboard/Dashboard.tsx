@@ -10,26 +10,40 @@ import Button from "@/components/Button";
 import { webdavClient } from "@/lib/webdav-client";
 import Spinner from "@/components/Spinner";
 import { RowSelectionState } from "@tanstack/react-table";
-import { formatBytes, getSizeOfFolder } from "@/lib/utils";
+import {
+  downloadFileAsBlob,
+  findResourceById,
+  formatBytes,
+  getSizeOfFolder,
+  triggerDownload,
+} from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { QUERIES } from "@/actions/QUERIES";
 
+export type CloudFileType =
+  | "Folder"
+  | "File"
+  | "PDF"
+  | "Word Document"
+  | "Python Script"
+  | "PNG"
+  | "Presentation"
+  | "Excel Document"
+  | "Text Document"
+  | "JPEG Image"
+  | "GIF Image"
+  | "MP3 Audio"
+  | "MP4 Video";
+
 export type StorageItem = {
   id: number;
   userId: string;
   name: string;
   url: string;
-  type:
-    | "Folder"
-    | "File"
-    | "PDF"
-    | "Word Document"
-    | "Python Script"
-    | "PNG"
-    | "Presentation";
+  type: CloudFileType;
   parentId: number;
   date: string;
   size?: number;
@@ -52,13 +66,13 @@ const Dashboard = () => {
   const [activeFolder, setActiveFolder] = useState<StorageItem>(defaultFolder);
   const [folderPath, setFolderPath] = useState<StorageItem[]>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState({
+    loading: false,
+    downloadLoading: true,
+  });
   const [editingItem, setEditingItem] = useState<StorageItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
-  const { user, authLoading } = useAuth();
-  const { uploadFile, uploading } = useFileUpload(user?.id, folderPath);
 
   // Drive data fetching
   const {
@@ -71,18 +85,41 @@ const Dashboard = () => {
     enabled: !!activeFolder,
   });
 
+  const selectedIds = Object.keys(rowSelection);
+
+  const { user, authLoading } = useAuth();
+  const { uploadFile, uploading } = useFileUpload(user?.id, folderPath);
+
+  const handleDownload = async () => {
+    const selectedResource = findResourceById(
+      filteredRows || [],
+      selectedIds[0],
+    );
+    console.log(selectedResource);
+    if (!selectedResource || !user) return;
+
+    try {
+      const blob = await downloadFileAsBlob(user, selectedResource);
+      console.log(blob);
+      // Use the original name (or modify as needed) for the download file name.
+      triggerDownload(blob, decodeURIComponent(selectedResource.name));
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
   const handleFolderClick = (folderId: number) => {
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, loading: true }));
     const folder = filteredRows?.find((item) => item.id === folderId);
     if (folder) {
       setActiveFolder(folder);
       setFolderPath((prevPath) => [...prevPath, folder]); // Add to breadcrumb
     }
-    setLoading(false);
+    setLoading((prev) => ({ ...prev, loading: false }));
   };
 
   const onNavigate = (folderId: number | null) => {
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, loading: true }));
     if (folderId === null) {
       // Reset to root
       setActiveFolder(defaultFolder);
@@ -98,7 +135,7 @@ const Dashboard = () => {
       const folder = folderPath.find((item) => item.id === folderId);
       setActiveFolder(folder!);
     }
-    setLoading(false);
+    setLoading((prev) => ({ ...prev, loading: false }));
   };
 
   // Handler for file input change
@@ -118,7 +155,7 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
-      {loading || authLoading || dataLoading ? (
+      {loading.loading || authLoading || dataLoading ? (
         <div className="flex min-h-0 flex-1 items-center justify-center p-4 pl-6">
           <Spinner />
         </div>
@@ -155,19 +192,27 @@ const Dashboard = () => {
                     <MIcon type={activeFolder.type} />
                   </>
                 )}
-                {activeFolder.name}
+                <div className="flex flex-row items-center gap-x-4">
+                  <span>{activeFolder.name}</span>
+                  <span>
+                    {filteredRows ? (
+                      <span className="text-[13px] text-neutral-600">
+                        {filteredRows.length} items,{" "}
+                        {formatBytes(getSizeOfFolder(filteredRows))}
+                      </span>
+                    ) : (
+                      <Spinner />
+                    )}
+                  </span>
+                </div>
               </h1>
-              {filteredRows ? (
-                <span className="text-[13px] text-neutral-600">
-                  {filteredRows.length} items,{" "}
-                  {formatBytes(getSizeOfFolder(filteredRows))}
-                </span>
-              ) : (
-                <Spinner />
-              )}
             </div>
             <div className="ml-auto flex items-center gap-x-2">
+              <Button variant="secondary" onClick={handleDownload}>
+                Download
+              </Button>
               <Button
+                variant="secondary"
                 onClick={async () => {
                   try {
                     var path: string = "";
@@ -187,6 +232,7 @@ const Dashboard = () => {
                 New Folder
               </Button>
               <Button
+                variant="secondary"
                 onClick={async () => {
                   var path: string = "";
                   folderPath.forEach((folder: StorageItem) => {
@@ -218,7 +264,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* Table to display the StorageItems */}
-          <div className="flex min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 overflow-hidden rounded-bl-xl rounded-br-xl">
             <DashboardTable
               editingItem={editingItem}
               setEditingItem={setEditingItem}

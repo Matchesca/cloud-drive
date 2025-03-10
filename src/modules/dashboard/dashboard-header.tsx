@@ -1,4 +1,3 @@
-import Button from "@/components/Button";
 import { authClient } from "@/lib/auth-client";
 import { Search } from "lucide-react";
 import { Avatar } from "radix-ui";
