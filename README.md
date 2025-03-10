@@ -11,7 +11,11 @@ A better self-hosted cloud storage solution.
 - [ ] Build ui scaffolding (WIP)
 - [ ] webdav mounted cleanup after deleting users or something to fix already mounted
 
-## Friday Match 7
+## Monday March
+
+- Want to setup ci/cd locally to the server
+
+## Friday March 7
 
 - Worked on renaming
 - now working on download and then make a new folder ui
