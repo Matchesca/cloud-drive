@@ -1,4 +1,4 @@
-import { StorageItem } from "./Dashboard";
+import type { StorageItem } from "./Dashboard";
 import {
   formatDate,
   getDecodedFileName,
@@ -102,7 +102,7 @@ export const columns: ColumnDef<StorageItem>[] = [
         >
           <ActionDropdownMenu
             row={row}
-            editingItem={editingItem!}
+            editingItem={editingItem}
             setEditingItem={setEditingItem}
           />
         </div>

@@ -9,7 +9,7 @@ import MIcon from "@/components/MIcon";
 import Button from "@/components/Button";
 import { webdavClient } from "@/lib/webdav-client";
 import Spinner from "@/components/Spinner";
-import { RowSelectionState } from "@tanstack/react-table";
+import type { RowSelectionState } from "@tanstack/react-table";
 import {
   downloadFileAsBlob,
   findResourceById,
@@ -88,11 +88,11 @@ const Dashboard = () => {
   const selectedIds = Object.keys(rowSelection);
 
   const { user, authLoading } = useAuth();
-  const { uploadFile, uploading } = useFileUpload(user?.id, folderPath);
+  const { uploadFile } = useFileUpload(user?.id, folderPath);
 
   const handleDownload = async () => {
     const selectedResource = findResourceById(
-      filteredRows || [],
+      filteredRows ?? [],
       selectedIds[0],
     );
     console.log(selectedResource);
@@ -215,7 +215,7 @@ const Dashboard = () => {
                 variant="secondary"
                 onClick={async () => {
                   try {
-                    var path: string = "";
+                    let path = "";
                     folderPath.forEach((folder: StorageItem) => {
                       path += folder.name;
                       path += "/";
@@ -234,7 +234,7 @@ const Dashboard = () => {
               <Button
                 variant="secondary"
                 onClick={async () => {
-                  var path: string = "";
+                  let path = "";
                   folderPath.forEach((folder: StorageItem) => {
                     path += folder.name;
                     path += "/";
@@ -270,7 +270,7 @@ const Dashboard = () => {
               setEditingItem={setEditingItem}
               rowSelection={rowSelection}
               setRowSelection={setRowSelection}
-              rows={filteredRows!}
+              rows={filteredRows}
               handleFolderClick={handleFolderClick}
             />
           </div>

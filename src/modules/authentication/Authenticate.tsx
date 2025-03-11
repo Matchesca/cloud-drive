@@ -6,7 +6,6 @@ import { useState } from "react";
 import * as motion from "motion/react-client";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
 const Authenticate = () => {
   const [isLogin, setLogin] = useState<boolean>(true);
@@ -23,7 +22,7 @@ const Authenticate = () => {
                 callbackURL: "/dashboard",
               },
               {
-                onSuccess: (ctx) => {
+                onSuccess: (_ctx) => {
                   router.push("/dashboard");
                 },
               },

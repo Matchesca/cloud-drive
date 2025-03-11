@@ -58,7 +58,7 @@ export function formatBytes(bytes: number, decimals = 0): string {
  * @returns Size of the folder added up (e.g., "2134").
  */
 export function getSizeOfFolder(filteredRows: StorageItem[]) {
-  var size: number = 0;
+  let size = 0;
   filteredRows.forEach((item) => {
     if (item.size) {
       size += item.size;
@@ -138,7 +138,7 @@ export async function downloadFileAsBlob(
     responseType: "blob",
     withCredentials: true,
   });
-  return response.data;
+  return response.data as Blob;
 }
 
 export function triggerDownload(blob: Blob, filename: string) {

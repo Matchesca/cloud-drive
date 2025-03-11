@@ -6,7 +6,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { StorageItem } from "./Dashboard";
+import type { StorageItem } from "./Dashboard";
 
 interface DashboardBreadcrumbProps {
   folderPath: StorageItem[];

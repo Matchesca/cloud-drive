@@ -20,11 +20,13 @@ const DropdownItems: DropdownItemType[] = [
   {
     label: "Download",
     Icon: Download,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     action: () => {},
   },
   {
     label: "Rename",
     Icon: Pencil,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     action: () => {},
   },
 ];

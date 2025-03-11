@@ -1,4 +1,4 @@
-import { Link, LucideIcon } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import * as motion from "motion/react-client";
 import clsx from "clsx";
 
@@ -17,6 +17,7 @@ const DashboardNavItem: React.FC<DashboardNavItemProps> = ({
 }) => {
   return (
     <motion.div
+      onClick={() => console.log(link)}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       className={clsx(

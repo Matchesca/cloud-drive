@@ -4,7 +4,7 @@ import {
   FileText,
   Code,
   Presentation,
-  Image,
+  Image as ImageIcon,
   File,
   FileSpreadsheet,
   FileAudio,
@@ -28,15 +28,15 @@ const MIcon: React.FC<MIconProps> = ({ type }) => {
     case "Presentation":
       return <Presentation />;
     case "PNG":
-      return <Image className="text-blue-500" />;
+      return <ImageIcon className="text-blue-500" />;
     case "Excel Document":
       return <FileSpreadsheet className="text-green-500" />;
     case "Text Document":
       return <FileText />;
     case "JPEG Image":
-      return <Image className="text-blue-500" />;
+      return <ImageIcon className="text-blue-500" />;
     case "GIF Image":
-      return <Image className="text-blue-500" />;
+      return <ImageIcon className="text-blue-500" />;
     case "MP3 Audio":
       return <FileAudio className="text-red-500" />;
     case "MP4 Video":

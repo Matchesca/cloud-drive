@@ -41,7 +41,7 @@ export function DataTable<TData, TValue>({
     columns,
     getRowId(originalRow, index, parent) {
       const ogRow = originalRow as StorageItem;
-      return ogRow.id;
+      return ogRow.id.toString();
     },
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: setRowSelection,
