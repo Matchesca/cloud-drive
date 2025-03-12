@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download, FolderPlus } from "lucide-react";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
@@ -208,11 +208,15 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="ml-auto flex items-center gap-x-2">
-              <Button variant="secondary" onClick={handleDownload}>
-                Download
+              <Button
+                disabled={Object.keys(rowSelection).length === 0}
+                variant="ghost"
+                onClick={handleDownload}
+              >
+                <Download size={16} />
               </Button>
               <Button
-                variant="secondary"
+                variant="ghost"
                 onClick={async () => {
                   try {
                     let path = "";
@@ -229,7 +233,7 @@ const Dashboard = () => {
                   }
                 }}
               >
-                New Folder
+                <FolderPlus size={16} />
               </Button>
               <Button
                 variant="secondary"

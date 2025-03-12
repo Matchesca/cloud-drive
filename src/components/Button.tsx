@@ -5,7 +5,7 @@ import * as motion from "motion/react-client";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
-  variant?: "primary" | "secondary" | "muted" | "outline" | "destructive";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "destructive";
 }
 
 // Custom class to have different types of buttons
@@ -27,7 +27,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         <button
           className={clsx(
-            "inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] px-4 disabled:opacity-50",
+            "disable:pointer-events-none inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] px-4 transition-all duration-300 disabled:opacity-50",
             variantClasses[variant],
             className,
           )}
