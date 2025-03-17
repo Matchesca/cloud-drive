@@ -21,4 +21,17 @@ export const MUTATIONS = {
       throw error;
     }
   },
+
+  delete: async ({ resource }: { resource: StorageItem }) => {
+    try {
+      console.log(resource);
+
+      await webdavClient.deleteFile(
+        `${resource.userId}${decodeURIComponent(resource.url)}`,
+      );
+      return "Success";
+    } catch (error) {
+      console.error("Error in mutation delete:", error);
+    }
+  },
 };

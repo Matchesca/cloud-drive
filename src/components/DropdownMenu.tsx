@@ -1,4 +1,6 @@
+import { MUTATIONS } from "@/actions/MUTATIONS";
 import { StorageItem } from "@/modules/dashboard/Dashboard";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Row } from "@tanstack/react-table";
 import {
   Download,
@@ -41,6 +43,17 @@ const ActionDropdownMenu: React.FC<ActionDropdownMenuProps> = ({
   row,
   setEditingItem,
 }) => {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: MUTATIONS.delete,
+    mutationKey: ["deleteFile"],
+    onSuccess: () => {
+      console.log("Succesfully deleted file");
+      queryClient.invalidateQueries({ queryKey: ["driveData"] });
+    },
+  });
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -70,7 +83,10 @@ const ActionDropdownMenu: React.FC<ActionDropdownMenuProps> = ({
             </DropdownMenu.Item>
           ))}
           <DropdownMenu.Separator className="m-[3px] h-px bg-black/5" />
-          <DropdownMenu.Item className="flex select-none flex-row items-center gap-x-4 rounded-[8px] p-[4px] text-red-500 outline-none hover:bg-gray-200">
+          <DropdownMenu.Item
+            onClick={() => deleteMutation.mutate({ resource: row.original })}
+            className="flex select-none flex-row items-center gap-x-4 rounded-[8px] p-[4px] text-red-500 outline-none hover:bg-gray-200"
+          >
             <Trash size={17} />
             Delete
           </DropdownMenu.Item>

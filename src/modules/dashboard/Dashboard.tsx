@@ -20,7 +20,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERIES } from "@/actions/QUERIES";
 
 export type CloudFileType =
@@ -73,6 +73,7 @@ const Dashboard = () => {
   const [editingItem, setEditingItem] = useState<StorageItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // Drive data fetching
   const {
@@ -82,6 +83,7 @@ const Dashboard = () => {
   } = useQuery({
     queryKey: ["driveData", { activeFolder }],
     queryFn: QUERIES.fetchDriveData,
+    staleTime: 60_000,
     enabled: !!activeFolder,
   });
 
@@ -120,6 +122,7 @@ const Dashboard = () => {
 
   const onNavigate = (folderId: number | null) => {
     setLoading((prev) => ({ ...prev, loading: true }));
+    setRowSelection({});
     if (folderId === null) {
       // Reset to root
       setActiveFolder(defaultFolder);
@@ -146,6 +149,7 @@ const Dashboard = () => {
       const file = event.target.files[0];
       if (file) {
         await uploadFile(file);
+        queryClient.invalidateQueries({ queryKey: ["driveData"] });
       } else {
         console.log("Please input a File");
       }
@@ -235,6 +239,7 @@ const Dashboard = () => {
               >
                 <FolderPlus size={16} />
               </Button>
+              {/*
               <Button
                 variant="secondary"
                 onClick={async () => {
@@ -251,6 +256,7 @@ const Dashboard = () => {
               >
                 PROPFIND
               </Button>
+              */}
               <Button
                 onClick={() => {
                   fileInputRef.current?.click();
