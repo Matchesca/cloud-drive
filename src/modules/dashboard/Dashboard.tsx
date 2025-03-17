@@ -156,6 +156,33 @@ const Dashboard = () => {
     }
   };
 
+  const createNewFolder = () => {
+    let path = "";
+    folderPath.forEach((folder: StorageItem) => {
+      path += folder.name;
+      path += "/";
+    });
+
+    const newFolder: StorageItem = {
+      id: -1,
+      userId: user?.id ?? "0",
+      name: "New Folder",
+      url: `${user?.id}/${path}`,
+      type: "Folder",
+      parentId: activeFolder.id,
+      date: new Date().toISOString(),
+      shared: false,
+      isEditing: true,
+    };
+
+    setEditingItem(newFolder);
+  };
+
+  const tableRows =
+    editingItem && editingItem.id === -1
+      ? [editingItem, ...filteredRows!]
+      : filteredRows;
+
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
@@ -219,24 +246,7 @@ const Dashboard = () => {
               >
                 <Download size={16} />
               </Button>
-              <Button
-                variant="ghost"
-                onClick={async () => {
-                  try {
-                    let path = "";
-                    folderPath.forEach((folder: StorageItem) => {
-                      path += folder.name;
-                      path += "/";
-                    });
-                    await webdavClient.createDirectory(
-                      `${user?.id}/${path}Documents`,
-                    );
-                    router.refresh();
-                  } catch (error) {
-                    console.log(error);
-                  }
-                }}
-              >
+              <Button variant="ghost" onClick={createNewFolder}>
                 <FolderPlus size={16} />
               </Button>
               {/*
@@ -280,7 +290,7 @@ const Dashboard = () => {
               setEditingItem={setEditingItem}
               rowSelection={rowSelection}
               setRowSelection={setRowSelection}
-              rows={filteredRows}
+              rows={tableRows || []}
               handleFolderClick={handleFolderClick}
             />
           </div>
