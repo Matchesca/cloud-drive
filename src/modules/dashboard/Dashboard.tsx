@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Download, FolderPlus } from "lucide-react";
+import { ArrowLeft, Download, FolderPlus, Upload } from "lucide-react";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
@@ -22,6 +22,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERIES } from "@/actions/QUERIES";
+import clsx from "clsx";
 
 export type CloudFileType =
   | "Folder"
@@ -90,7 +91,7 @@ const Dashboard = () => {
   const selectedIds = Object.keys(rowSelection);
 
   const { user, authLoading } = useAuth();
-  const { uploadFile } = useFileUpload(user?.id, folderPath);
+  const { uploadFile, progress } = useFileUpload(user?.id, folderPath);
 
   const handleDownload = async () => {
     const selectedResource = findResourceById(
@@ -148,7 +149,7 @@ const Dashboard = () => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       if (file) {
-        await uploadFile(file);
+        uploadFile(file);
         queryClient.invalidateQueries({ queryKey: ["driveData"] });
       } else {
         console.log("Please input a File");
@@ -165,6 +166,7 @@ const Dashboard = () => {
 
     const newFolder: StorageItem = {
       id: -1,
+      size: 0,
       userId: user?.id ?? "0",
       name: "New Folder",
       url: `${user?.id}/${path}`,
@@ -180,7 +182,7 @@ const Dashboard = () => {
 
   const tableRows =
     editingItem && editingItem.id === -1
-      ? [editingItem, ...filteredRows!]
+      ? [...filteredRows!, editingItem]
       : filteredRows;
 
   return (
@@ -241,13 +243,18 @@ const Dashboard = () => {
             <div className="ml-auto flex items-center gap-x-2">
               <Button
                 disabled={Object.keys(rowSelection).length === 0}
-                variant="ghost"
+                variant="secondary"
                 onClick={handleDownload}
+                className={clsx(
+                  Object.keys(rowSelection).length === 0 ? "hidden" : "block",
+                )}
               >
                 <Download size={16} />
+                Download
               </Button>
-              <Button variant="ghost" onClick={createNewFolder}>
+              <Button variant="secondary" onClick={createNewFolder}>
                 <FolderPlus size={16} />
+                New Folder
               </Button>
               {/*
               <Button
@@ -272,6 +279,7 @@ const Dashboard = () => {
                   fileInputRef.current?.click();
                 }}
               >
+                <Upload size={16} />
                 Upload
               </Button>
               {/* Hidden file input */}

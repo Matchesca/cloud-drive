@@ -6,10 +6,16 @@ A better self-hosted cloud storage solution.
 
 - [x] Renaming (annoying)
 - [ ] File uploading ux
-- [ ] Folder creation ux (WIP)
+- [x] Folder creation ux (WIP)
 - [x] Add Actual file uploading and storing
 - [ ] Build ui scaffolding (WIP)
 - [ ] webdav mounted cleanup after deleting users or something to fix already mounted
+
+## Tuesday March 18
+
+- Worked on backend delete logic
+- File uploading ui
+- Should work on quota/admin-dashboard/other-pages
 
 ## Monday March
 

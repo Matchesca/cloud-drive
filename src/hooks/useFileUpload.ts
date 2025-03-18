@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { webdavClient } from "@/lib/webdav-client";
 import { StorageItem } from "@/modules/dashboard/Dashboard";
+import { ProgressEvent } from "webdav";
 
 export const useFileUpload = (
   userId: string | undefined,
   folderPath: StorageItem[],
 ) => {
   const [uploading, setUploading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
 
   // Helper to build the folder path string
   const buildFolderPath = (folders: StorageItem[]): string =>
@@ -23,6 +25,13 @@ export const useFileUpload = (
       const fileContents = await file.arrayBuffer();
       await webdavClient.putFileContents(uploadPath, fileContents, {
         overwrite: true,
+        onUploadProgress: (e: ProgressEvent) => {
+          // Calculate and update the upload progress percentage
+          if (e.total) {
+            const percentCompleted = Math.round((e.loaded * 100) / e.total);
+            setProgress(percentCompleted);
+          }
+        },
       });
       console.log("File uploaded successfully");
     } catch (error: any) {
@@ -36,5 +45,5 @@ export const useFileUpload = (
     }
   };
 
-  return { uploadFile, uploading };
+  return { uploadFile, uploading, progress };
 };
