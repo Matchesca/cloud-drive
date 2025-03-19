@@ -1,5 +1,6 @@
 import CircularProgress from "@/components/CircularProgress";
 import { File, UploadCloud } from "lucide-react";
+import { useState } from "react";
 
 interface UploadCenterProps {
   uploadProgress: number;
@@ -7,6 +8,11 @@ interface UploadCenterProps {
 }
 
 const UploadCenter = ({ uploadProgress, totalFiles }: UploadCenterProps) => {
+  const [show, setShow] = useState<boolean>(false);
+
+  if (!show) {
+    return <></>;
+  }
   return (
     <div className="flex h-10 flex-row items-center space-x-2 rounded-[12px] bg-violet-500/50 p-2 transition-all duration-200 hover:bg-violet-500/75">
       <CircularProgress

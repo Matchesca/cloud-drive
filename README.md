@@ -4,12 +4,15 @@ A better self-hosted cloud storage solution.
 
 # TO-DO
 
-- [x] Renaming (annoying)
-- [ ] File uploading ux
-- [x] Folder creation ux (WIP)
-- [x] Add Actual file uploading and storing
+- [ ] File uploading ux (WIP)
+- [x] Folder creation ux
 - [ ] Build ui scaffolding (WIP)
 - [ ] webdav mounted cleanup after deleting users or something to fix already mounted
+
+## Wednesday March 19
+
+- Finally fixed delete issue
+- Quota info is done
 
 ## Tuesday March 18
 

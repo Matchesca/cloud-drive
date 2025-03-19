@@ -184,14 +184,6 @@ const Dashboard = () => {
       ? [...filteredRows!, editingItem]
       : filteredRows;
 
-  if (authLoading) {
-    return (
-      <div className="h-screen w-full items-center justify-center">
-        Authenticating...
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
