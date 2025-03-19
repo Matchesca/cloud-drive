@@ -1,13 +1,12 @@
 "use client";
 
-import { ArrowLeft, Download, FolderPlus, Upload } from "lucide-react";
+import { ArrowLeft, Download, FolderPlus, UploadCloud } from "lucide-react";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 import DashboardHeader from "./dashboard-header";
 import DashboardTable from "./dashboard-table";
 import { useRef, useState } from "react";
 import MIcon from "@/components/MIcon";
 import Button from "@/components/Button";
-import { webdavClient } from "@/lib/webdav-client";
 import Spinner from "@/components/Spinner";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
@@ -23,6 +22,8 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERIES } from "@/actions/QUERIES";
 import clsx from "clsx";
+import UploadCenter from "./upload-center";
+import { AnimatePresence, motion } from "motion/react";
 
 export type CloudFileType =
   | "Folder"
@@ -91,19 +92,20 @@ const Dashboard = () => {
   const selectedIds = Object.keys(rowSelection);
 
   const { user, authLoading } = useAuth();
-  const { uploadFile, progress } = useFileUpload(user?.id, folderPath);
+  const { uploadFile, progress, totalFiles } = useFileUpload(
+    user?.id,
+    folderPath,
+  );
 
   const handleDownload = async () => {
     const selectedResource = findResourceById(
       filteredRows ?? [],
       selectedIds[0],
     );
-    console.log(selectedResource);
     if (!selectedResource || !user) return;
 
     try {
       const blob = await downloadFileAsBlob(user, selectedResource);
-      console.log(blob);
       // Use the original name (or modify as needed) for the download file name.
       triggerDownload(blob, decodeURIComponent(selectedResource.name));
     } catch (error) {
@@ -147,13 +149,10 @@ const Dashboard = () => {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      if (file) {
-        uploadFile(file);
-        queryClient.invalidateQueries({ queryKey: ["driveData"] });
-      } else {
-        console.log("Please input a File");
-      }
+      // Convert the FileList into an array of File objects.
+      const files = Array.from(event.target.files);
+      uploadFile(files);
+      queryClient.invalidateQueries({ queryKey: ["driveData"] });
     }
   };
 
@@ -185,6 +184,14 @@ const Dashboard = () => {
       ? [...filteredRows!, editingItem]
       : filteredRows;
 
+  if (authLoading) {
+    return (
+      <div className="h-screen w-full items-center justify-center">
+        Authenticating...
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen flex-col">
       <DashboardHeader />
@@ -204,7 +211,7 @@ const Dashboard = () => {
           />
 
           {/* Current Folder Header */}
-          <div className="flex flex-row">
+          <div className="flex flex-row justify-between">
             <div className="flex flex-col pt-4">
               <h1 className="flex flex-row items-center gap-x-2 text-2xl">
                 {/* To render the back button and correct icon */}
@@ -240,18 +247,31 @@ const Dashboard = () => {
                 </div>
               </h1>
             </div>
-            <div className="ml-auto flex items-center gap-x-2">
-              <Button
-                disabled={Object.keys(rowSelection).length === 0}
-                variant="secondary"
-                onClick={handleDownload}
+            <div className="flex items-center">
+              {totalFiles > 0 && (
+                <UploadCenter
+                  totalFiles={totalFiles}
+                  uploadProgress={progress}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-x-2">
+              <div
                 className={clsx(
-                  Object.keys(rowSelection).length === 0 ? "hidden" : "block",
+                  "transition-all duration-300",
+                  Object.keys(rowSelection).length === 0
+                    ? "opacity-0"
+                    : findResourceById(filteredRows, selectedIds[0])?.type !==
+                        "Folder"
+                      ? "opacity-100"
+                      : "opacity-0",
                 )}
               >
-                <Download size={16} />
-                Download
-              </Button>
+                <Button variant="secondary" onClick={handleDownload}>
+                  <Download size={16} />
+                  Download
+                </Button>
+              </div>
               <Button variant="secondary" onClick={createNewFolder}>
                 <FolderPlus size={16} />
                 New Folder
@@ -279,12 +299,13 @@ const Dashboard = () => {
                   fileInputRef.current?.click();
                 }}
               >
-                <Upload size={16} />
+                <UploadCloud size={16} />
                 Upload
               </Button>
               {/* Hidden file input */}
               <input
                 type="file"
+                multiple
                 ref={fileInputRef}
                 style={{ display: "none" }}
                 onChange={handleFileUpload}

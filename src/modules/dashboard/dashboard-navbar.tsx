@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import DashboardNavItem from "./dashboard-navitem";
 import { navitems } from "./navitems";
+import UserQuota from "./user-quota";
 
 const DashboardNavbar = () => {
   const pathName = usePathname();
@@ -23,7 +24,9 @@ const DashboardNavbar = () => {
           })}
         </div>
       </div>
-      <div className="mt-auto">hello</div>
+      <div className="mt-auto">
+        <UserQuota />
+      </div>
     </div>
   );
 };

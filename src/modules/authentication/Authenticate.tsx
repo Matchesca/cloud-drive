@@ -43,7 +43,7 @@ const Authenticate = () => {
               {
                 email: email,
                 password: password,
-                name: firstName + lastName,
+                name: firstName + " " + lastName,
               },
               {
                 onSuccess: async (ctx) => {

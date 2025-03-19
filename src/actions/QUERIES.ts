@@ -34,6 +34,13 @@ export const QUERIES = {
 
   fetchDriveQuota: async () => {
     try {
+      const response = await axios({
+        url: `${process.env.NEXT_PUBLIC_SERVER}/user/get-quota`,
+        method: "GET",
+        withCredentials: true,
+      });
+
+      return response.data;
     } catch (error) {
       throw error;
     }
