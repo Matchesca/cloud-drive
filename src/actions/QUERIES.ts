@@ -1,4 +1,3 @@
-import { webdavClient } from "@/lib/webdav-client";
 import { StorageItem } from "@/modules/dashboard/Dashboard";
 import axios from "axios";
 
@@ -40,6 +39,7 @@ export const QUERIES = {
         withCredentials: true,
       });
 
+      // eslint-disable-next-line
       return response.data;
     } catch (error) {
       throw error;

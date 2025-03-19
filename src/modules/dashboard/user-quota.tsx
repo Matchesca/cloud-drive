@@ -4,7 +4,6 @@ import { formatBytes } from "@/lib/utils";
 import Spinner from "@/components/Spinner";
 import { useAuth } from "@/hooks/useAuth";
 import { User } from "lucide-react";
-import clsx from "clsx";
 
 const QUOTA = 1024 * 1024 * 1024 * 5;
 
@@ -37,7 +36,7 @@ const UserQuota = () => {
       <div className="flex flex-row items-center justify-between">
         <span className="text-sm">Storage:</span>
         <span className="text-xs">
-          {formatBytes(data.total)} of {formatBytes(QUOTA)}
+          {formatBytes(data.total as number)} of {formatBytes(QUOTA)}
         </span>
       </div>
       {/* Storage bar */}

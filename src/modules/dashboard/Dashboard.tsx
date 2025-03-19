@@ -311,7 +311,7 @@ const Dashboard = () => {
               setEditingItem={setEditingItem}
               rowSelection={rowSelection}
               setRowSelection={setRowSelection}
-              rows={tableRows || []}
+              rows={tableRows ?? []}
               handleFolderClick={handleFolderClick}
             />
           </div>
