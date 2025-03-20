@@ -74,7 +74,6 @@ const Dashboard = () => {
   });
   const [editingItem, setEditingItem] = useState<StorageItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   // Drive data fetching
@@ -239,14 +238,6 @@ const Dashboard = () => {
                 </div>
               </h1>
             </div>
-            <div className="flex items-center">
-              {totalFiles > 0 && (
-                <UploadCenter
-                  totalFiles={totalFiles}
-                  uploadProgress={progress}
-                />
-              )}
-            </div>
             <div className="flex items-center gap-x-2">
               <div
                 className={clsx(
@@ -291,8 +282,17 @@ const Dashboard = () => {
                   fileInputRef.current?.click();
                 }}
               >
-                <UploadCloud size={16} />
-                Upload
+                {totalFiles > 0 ? (
+                  <UploadCenter
+                    totalFiles={totalFiles}
+                    uploadProgress={progress}
+                  />
+                ) : (
+                  <>
+                    <UploadCloud size={16} />
+                    Upload
+                  </>
+                )}
               </Button>
               {/* Hidden file input */}
               <input

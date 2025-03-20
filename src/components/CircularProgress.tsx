@@ -14,9 +14,7 @@ const CircularProgress = ({
   progress,
   color,
 }: CircularProgressProps) => {
-  // Adjust the radius so that the entire stroke is visible
   const normalizedRadius = radius - stroke / 2;
-  // Calculate the circle's circumference
   const circumference = normalizedRadius * 2 * Math.PI;
   // Calculate the strokeDashoffset based on the progress value
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -29,7 +27,7 @@ const CircularProgress = ({
               cx={radius}
               cy={radius}
               r={normalizedRadius}
-              className="stroke-violet-400"
+              className="stroke-slate-200"
               strokeWidth={stroke}
               fill="none"
             />

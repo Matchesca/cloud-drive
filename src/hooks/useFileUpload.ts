@@ -1,8 +1,29 @@
 import { useState } from "react";
-import { webdavClient } from "@/lib/webdav-client";
 import { StorageItem } from "@/modules/dashboard/Dashboard";
-import { ProgressEvent } from "webdav";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+
+async function uploadFileWithAxios(
+  uploadUrl: string,
+  fileContents: ArrayBuffer,
+  onProgress: (percentage: number) => void,
+) {
+  const webdavUrl = process.env.NEXT_PUBLIC_WEBDAV_CLIENT!;
+  return axios.put(webdavUrl + "/" + uploadUrl, fileContents, {
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/octet-stream", // or the appropriate MIME type
+    },
+    onUploadProgress: (progressEvent) => {
+      if (progressEvent.total) {
+        const percent = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total,
+        );
+        onProgress(percent);
+      }
+    },
+  });
+}
 
 export const useFileUpload = (
   userId: string | undefined,
@@ -31,24 +52,21 @@ export const useFileUpload = (
         const uploadPath = `${userId}/${path}${decodedFileName}`;
         const fileContents = await file.arrayBuffer();
 
-        await webdavClient.putFileContents(uploadPath, fileContents, {
-          overwrite: true,
-          onUploadProgress: (e: ProgressEvent) => {
-            if (e.total) {
-              // e.loaded is the bytes loaded for the current file.
-              // Overall progress: bytes already uploaded plus bytes currently uploading.
-              const overallProgress = Math.round(
-                ((uploadedBytes + e.loaded) * 100) / totalBytes,
-              );
-              setProgress(overallProgress);
-            }
-          },
+        await uploadFileWithAxios(uploadPath, fileContents, (fileProgress) => {
+          // Update overall progress based on current file's progress
+          const overallProgress = Math.round(
+            ((uploadedBytes + (fileProgress / 100) * file.size) * 100) /
+              totalBytes,
+          );
+          setProgress(overallProgress);
         });
+
         // File finished uploading, add its size to uploadedBytes.
         uploadedBytes += file.size;
         setProgress(Math.round((uploadedBytes * 100) / totalBytes));
       }
       console.log("All files uploaded successfully");
+      setTotalFiles(0);
       queryClient.invalidateQueries({ queryKey: ["driveData"] });
     } catch (error: any) {
       if (error.response && error.response.status === 403) {
