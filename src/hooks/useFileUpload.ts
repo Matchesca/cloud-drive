@@ -40,7 +40,6 @@ export const useFileUpload = (
               const overallProgress = Math.round(
                 ((uploadedBytes + e.loaded) * 100) / totalBytes,
               );
-              console.log(overallProgress);
               setProgress(overallProgress);
             }
           },
