@@ -4,10 +4,16 @@ A better self-hosted cloud storage solution.
 
 # TO-DO
 
-- [ ] File uploading ux (WIP)
+- [x] File uploading ux (I think done)
 - [x] Folder creation ux
 - [ ] Build ui scaffolding (WIP)
 - [ ] webdav mounted cleanup after deleting users or something to fix already mounted
+
+## Thursday March 20
+
+- Deploying shit is hard
+- should use docker compose instead of 2 repos
+- kind of getting borde of this app
 
 ## Wednesday March 19
 
