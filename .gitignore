@@ -44,3 +44,9 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# storage folder (used for local development storage)
+/storage
+
+# personal notes
+notes.md
